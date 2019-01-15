@@ -1,0 +1,42 @@
+version: '2'
+
+services:
+  mariadb:
+    image: 'bitnami/mariadb:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=my_user
+      - MARIADB_DATABASE=onetoone
+      - MARIADB_PASSWORD=onetoone
+    volumes:
+      - mariadb_data:/bitnami
+  phpmyadmin:
+    image: bitnami/phpmyadmin:latest
+    depends_on:
+      - mariadb
+    ports:
+      - '8082:80'
+    volumes:
+      - phpmyadmin_data:/bitnami
+ 
+  myapp:
+    tty: true
+    image: 'bitnami/laravel:latest'
+    labels:
+      kompose.service.type: nodeport
+    environment:
+      - DB_HOST=mariadb
+      - DB_USERNAME=my_user
+      - DB_DATABASE=onetoone
+      - DB_PASSWORD=onetoone
+    depends_on:
+      - mariadb
+    ports:
+      - 3030:3000
+    volumes:
+      - ./:/app
+volumes:
+  mariadb_data:
+    driver: local
+  phpmyadmin_data:
+    driver: local
